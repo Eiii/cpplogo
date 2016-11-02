@@ -1,0 +1,6 @@
+build
+tags
+.ycm_extra_conf.*
+*.csv
+*.png
+

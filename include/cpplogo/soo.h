@@ -1,0 +1,66 @@
+/***********************************************************
+* soo.h
+* Implements SOO.
+***********************************************************/
+#pragma once
+#include "cpplogo/optintf.h"
+#include "cpplogo/node.h"
+
+namespace cpplogo {
+
+class SOO : public OptIntf {
+/***********************************************************
+* Options structure
+***********************************************************/
+  public:
+    struct Options : public OptIntf::Options {
+      Options(ObjectiveFn fn, int dim, int max_observations, 
+              int num_children) :
+        OptIntf::Options(fn, dim, max_observations), num_children(num_children)
+      {}
+      int num_children; // Number of children each node splits into
+    };
+
+  public:
+    SOO(const Options& opt);
+    virtual ~SOO() = default;
+
+  public:
+    int num_expansions() const { return num_expansions_; }
+    int num_node_evals() const { return num_node_evals_; }
+    const std::vector<Node>& step_observed_nodes() const 
+      { return step_observed_nodes_; }
+
+  public:
+    const Node* BestNode() const;
+
+  protected:
+    void BeginStep() override;
+    void EndStep() override;
+    int CalculateMaxDepth() const override;
+    void ExpandBestAtDepth(int depth) override;
+
+  protected:
+    virtual Node* BestNodeAtDepth(int depth);
+    virtual size_t ChooseSplitDimension(const Node* node) const;
+    virtual void ObserveNodes(std::vector<Node>* nodes);
+    virtual void ObserveNode(Node* node);
+
+  protected:
+    const Node* BestNodeAtDepth(int depth) const;
+    void RemoveNode(Node* node);
+    std::vector<Node> ExpandNode(const Node* node) const;
+
+  protected:
+    // Variables from the options structure
+    int num_children_;
+
+    double vmax_;        // Best node value expanded in this step
+    int num_expansions_; // Number of node expansions
+    int num_node_evals_; // Number of node evaluations
+    std::vector<std::vector<Node>> space_;  // All levels of nodes
+    std::vector<Node> step_observed_nodes_; // All nodes that were observed in
+                                            // this step
+};
+
+}
