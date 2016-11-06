@@ -7,12 +7,12 @@
 
 namespace cpplogo {
 
-class LOGO : public SOO {
+class LOGO : virtual public SOO {
 /***********************************************************
 * Options structure
 ***********************************************************/
   public:
-    struct Options : public SOO::Options {
+    struct Options : virtual public SOO::Options {
       Options(ObjectiveFn fn, int dim, int max_observations, 
               int num_children, std::vector<int> w_schedule) :
         SOO::Options(fn, dim, max_observations, num_children),

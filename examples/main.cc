@@ -3,8 +3,11 @@
 #include "cpplogo/logging.h"
 #include "cpplogo/node.h"
 #include "cpplogo/soo.h"
+#include "cpplogo/randomsoo.h"
 #include "cpplogo/logo.h"
+#include "cpplogo/randomlogo.h"
 
+using std::vector;
 using namespace cpplogo;
 
 struct Function {
@@ -26,20 +29,47 @@ double obs_error(double best, const Function& fn)
 
 //Evaluate a given SOO-like algorithm on a given function until
 //it reaches error epsilon
+constexpr int c_max_obs = 8000;
+constexpr int c_num_children = 3;
+
 template <typename Alg, typename... OptArgs>
 void evaluate(const Function& fn, double epsilon, OptArgs... args) 
 {
-  typename Alg::Options opt(fn.fn, fn.dim, 8000, 3, args...);
+  typename Alg::Options opt(fn.fn, fn.dim, c_max_obs, c_num_children, args...);
   Alg alg(opt);
 
   double best = alg.BestNode()->value();
-  while (obs_error(best, fn) > epsilon) {
+  while (obs_error(best, fn) > epsilon && !alg.IsFinished()) {
     alg.Step();  
     best = alg.BestNode()->value();
   }
   LOG(output) << "Number of function evaluations: " << alg.num_observations();
   LOG(output) << "Error: " << obs_error(alg.BestNode()->value(), fn);
   LOG(output) << "Best: " << alg.BestNode()->Center();
+}
+
+template <typename Alg, typename... OptArgs>
+void evaluate_many(const Function& fn, double epsilon, int count, OptArgs... args) 
+{
+  vector<int> obs;
+  for (int seed = 0; seed < count; seed++) {
+    typename Alg::Options opt(fn.fn, fn.dim, c_max_obs, c_num_children, 
+                              seed, args...);
+    Alg alg(opt);
+
+    double best = alg.BestNode()->value();
+    while (obs_error(best, fn) > epsilon && !alg.IsFinished()) {
+      alg.Step();  
+      best = alg.BestNode()->value();
+    }
+    obs.push_back(alg.num_observations());
+  }
+  LOG(output) << "# iterations over " << count << " runs: ";
+  LOG(output) << "  Min: " << *std::min_element(obs.begin(), obs.end());
+  LOG(output) << "  Max: " << *std::max_element(obs.begin(), obs.end());
+  double avg = std::accumulate(obs.begin(), obs.end(), 0) 
+               / static_cast<double>(obs.size());
+  LOG(output) << "  Avg: " << avg;
 }
 
 //Objective functions
@@ -67,18 +97,29 @@ Function rosenbrock10_fn {
   .dim = 10,
 };
 
+void test_all_on_fn(const Function& fn) {
+  vector<int> logo_w = {3, 4, 5, 6, 8, 30};
+
+  LOG(output) << "-- SOO:";
+  evaluate<SOO>(fn, 1e-4);
+  LOG(output) << "-- LOGO:";
+  evaluate<LOGO>(fn, 1e-4, logo_w);
+
+  //Randomized algorithms
+  LOG(output) << "-- RandomSOO:";
+  evaluate_many<RandomSOO>(fn, 1e-4, 100);
+  LOG(output) << "-- RandomLOGO:";
+  evaluate_many<RandomLOGO>(fn, 1e-4, 100, logo_w);
+}
+
 int main() {
   //Replace `output` with `trace` for more detailed log output.
   init_logging(output);
 
-  LOG(output) << "SOO, rosenbrock2";
-  evaluate<SOO>(rosenbrock2_fn, 1e-4);
-  LOG(output) << "LOGO, rosenbrock2";
-  evaluate<LOGO, std::vector<int>>(rosenbrock2_fn, 1e-4, {3, 4, 5, 6, 8, 30});
-  LOG(output) << "SOO, rosenbrock10";
-  evaluate<SOO>(rosenbrock10_fn, 1e-4);
-  LOG(output) << "LOGO, rosenbrock10";
-  evaluate<LOGO, std::vector<int>>(rosenbrock10_fn, 1e-4, {3, 4, 5, 6, 8, 30});
+  LOG(output) << "=== rosenbrock_2 ===";
+  test_all_on_fn(rosenbrock2_fn);
+  LOG(output) << "=== rosenbrock_10 ===";
+  test_all_on_fn(rosenbrock10_fn);
 
   return 0;
 }
