@@ -9,6 +9,8 @@
 #include "cpplogo/bamsoo.h"
 #include "cpplogo/randombamsoo.h"
 #include "cpplogo/initbamsoo.h"
+#include "cpplogo/bamlogo.h"
+#include "cpplogo/randombamlogo.h"
 
 using std::vector;
 using namespace cpplogo;
@@ -32,7 +34,7 @@ double obs_error(double best, const Function& fn)
 
 //Evaluate a given SOO-like algorithm on a given function until
 //it reaches error epsilon
-constexpr int c_max_obs = 8000;
+constexpr int c_max_obs = 4000;
 constexpr int c_num_children = 3;
 
 template <typename Alg, typename... OptArgs>
@@ -109,6 +111,8 @@ void test_all_on_fn(const Function& fn) {
   evaluate<LOGO>(fn, 1e-4, logo_w);
   LOG(output) << "-- BaMSOO:";
   evaluate<BaMSOO>(fn, 1e-4);
+  LOG(output) << "-- BaMLOGO:";
+  evaluate<BaMLOGO>(fn, 1e-4, logo_w);
 
   //Randomized algorithms
   LOG(output) << "-- RandomSOO:";
@@ -116,7 +120,9 @@ void test_all_on_fn(const Function& fn) {
   LOG(output) << "-- RandomLOGO:";
   evaluate_many<RandomLOGO>(fn, 1e-4, 100, logo_w);
   LOG(output) << "-- RandomBaMSOO:";
-  evaluate_many<RandomBaMSOO>(fn, 1e-4, 25);
+  evaluate_many<RandomBaMSOO>(fn, 1e-4, 10);
+  LOG(output) << "-- RandomBaMLOGO:";
+  evaluate_many<RandomBaMLOGO>(fn, 1e-4, 10, logo_w);
   /* TODO: This takes too long?
   LOG(output) << "-- InitBaMSOO:";
   evaluate_many<InitBaMSOO>(fn, 1e-4, 3, 10);
