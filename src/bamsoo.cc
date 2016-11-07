@@ -83,6 +83,7 @@ void BaMSOO::ObserveNode(Node* node)
 * Helper function to initialize the bayesopt library's
 * parameters.
 ***********************************************************/
+namespace {
 bopt_params default_params()
 {
   bopt_params params = initialize_parameters_to_default();
@@ -119,6 +120,7 @@ bopt_params default_params()
 
   return params;
 } /* default_params() */
+}
 
 /***********************************************************
 * ExpandNode
@@ -163,7 +165,7 @@ void BaMSOO::AddExistingPoints(vecOfvec* xs, std::vector<double>* ys)
   //Init GP with all real observations
   for (const auto& node_list : space_) {
     for (const auto& node : node_list) {
-      if (!node.is_fake_value()) {
+      if (node.has_value() && !node.is_fake_value()) {
         xs->push_back(node.Center());  
         ys->push_back(node.value());
       }
@@ -182,6 +184,7 @@ void BaMSOO::InitGPPtr(const vecOfvec& xs, const vectord& ys)
     LOG(trace) << "Not enough data to build GP";
     gp_.reset(nullptr);
   } else {
+    assert(xs.size() == ys.size());
     LOG(trace) << "Building GP with " << xs.size() << " samples.";
     gp_.reset(new GP(default_params(), fn_, dim_));
     gp_->initializeOptimizationWithPoints(xs, ys);
