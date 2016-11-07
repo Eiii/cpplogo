@@ -45,11 +45,11 @@ class SOO : public OptIntf {
     virtual size_t ChooseSplitDimension(const Node* node) const;
     virtual void ObserveNodes(std::vector<Node>* nodes);
     virtual void ObserveNode(Node* node);
+    virtual std::vector<Node> ExpandNode(Node* node);
 
   protected:
     Node* BestNodeAtDepth(size_t depth);
     void RemoveNode(Node* node);
-    std::vector<Node> ExpandNode(const Node* node) const;
 
   protected:
     // Variables from the options structure

@@ -121,6 +121,25 @@ bopt_params default_params()
 } /* default_params() */
 
 /***********************************************************
+* ExpandNode
+* TODO: Investigate if this is a good idea or not.
+* When we expand a node, make sure it has a real value 
+* before continuing! Otherwise we can just drill deeper
+* and deeper into a part of the space we don't know very
+* much about.
+***********************************************************/
+std::vector<Node> BaMSOO::ExpandNode(Node* node)
+{
+  // Disabled for now-- seems to degrade performance
+  /*
+  if (node->is_fake_value()) {
+    SOO::ObserveNode(node);
+  }
+  */
+  return SOO::ExpandNode(node);
+} /* ExpandNode() */
+
+/***********************************************************
 * BuildGP
 * Build a GP from the real observed samples so far.
 ***********************************************************/

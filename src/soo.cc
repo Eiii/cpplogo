@@ -187,7 +187,7 @@ void SOO::RemoveNode(Node* node)
 * Expand the specified node.
 * Returns a list of the resultant child nodes.
 ***********************************************************/
-vector<Node> SOO::ExpandNode(const Node* node) const
+vector<Node> SOO::ExpandNode(Node* node)
 {
   LOG(trace) << "Expanding " << *node;
   vector<Node> children;
@@ -254,7 +254,7 @@ void SOO::ObserveNode(Node* node)
 {
   // If the node already has a value, then we don't have to 
   // do anything.
-  if (node->has_value()) {
+  if (node->has_value() && !node->is_fake_value()) {
     LOG(trace) << "Already had: " << *node;
     return;
   }

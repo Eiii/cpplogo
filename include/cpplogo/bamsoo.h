@@ -25,8 +25,11 @@ class BaMSOO : virtual public SOO {
     virtual ~BaMSOO() = default;
 
   protected:
-    virtual void ObserveNodes(std::vector<Node>* nodes);
-    virtual void ObserveNode(Node* node);
+    void ObserveNodes(std::vector<Node>* nodes) override;
+    void ObserveNode(Node* node) override;
+    std::vector<Node> ExpandNode(Node* node) override;
+
+  protected:
     virtual void BuildGP();
 
   protected:
