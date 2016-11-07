@@ -30,6 +30,14 @@ if( CPPLOGO_ENABLE_LOGGING )
   target_link_libraries( ${LIB_NAME} ${Boost_LIBRARIES} pthread )
 endif()
 
+#Bayesopt - for BaMSOO
+#TODO - this should be controllable via option
+set( Boost_NO_BOOST_CMAKE TRUE )
+add_subdirectory( bayesopt )
+set( BAYESOPT_INCLUDES "bayesopt/include" "bayesopt/utils" )
+include_directories( SYSTEM ${BAYESOPT_INCLUDES} )
+target_link_libraries( ${LIB_NAME} bayesopt )
+
 #Compilation settings
 set( CMAKE_CXX_FLAGS "-std=c++14 -Wall -Weffc++" )
 set( CMAKE_CXX_FLAGS_RELEASE "-O3" )

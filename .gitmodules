@@ -1,0 +1,3 @@
+[submodule "bayesopt"]
+	path = bayesopt
+	url = git@github.com:Eiii/bayesopt.git

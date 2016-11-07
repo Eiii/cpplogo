@@ -6,6 +6,7 @@
 #include "cpplogo/randomsoo.h"
 #include "cpplogo/logo.h"
 #include "cpplogo/randomlogo.h"
+#include "cpplogo/bamsoo.h"
 
 using std::vector;
 using namespace cpplogo;
@@ -104,12 +105,16 @@ void test_all_on_fn(const Function& fn) {
   evaluate<SOO>(fn, 1e-4);
   LOG(output) << "-- LOGO:";
   evaluate<LOGO>(fn, 1e-4, logo_w);
+  LOG(output) << "-- BaMSOO:";
+  evaluate<BaMSOO>(fn, 1e-4);
 
   //Randomized algorithms
+  /*
   LOG(output) << "-- RandomSOO:";
-  evaluate_many<RandomSOO>(fn, 1e-4, 100);
+  evaluate_many<RandomSOO>(fn, 1e-4, 10);
   LOG(output) << "-- RandomLOGO:";
-  evaluate_many<RandomLOGO>(fn, 1e-4, 100, logo_w);
+  evaluate_many<RandomLOGO>(fn, 1e-4, 10, logo_w);
+  */
 }
 
 int main() {
