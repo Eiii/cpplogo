@@ -37,17 +37,17 @@ class SOO : public OptIntf {
   protected:
     void BeginStep() override;
     void EndStep() override;
-    int CalculateMaxDepth() const override;
-    void ExpandBestAtDepth(int depth) override;
+    size_t CalculateMaxDepth() const override;
+    void ExpandBestAtDepth(size_t depth) override;
 
   protected:
-    virtual Node* BestNodeAtDepth(int depth);
+    virtual const Node* BestNodeAtDepth(size_t depth) const;
     virtual size_t ChooseSplitDimension(const Node* node) const;
     virtual void ObserveNodes(std::vector<Node>* nodes);
     virtual void ObserveNode(Node* node);
 
   protected:
-    const Node* BestNodeAtDepth(int depth) const;
+    Node* BestNodeAtDepth(size_t depth);
     void RemoveNode(Node* node);
     std::vector<Node> ExpandNode(const Node* node) const;
 

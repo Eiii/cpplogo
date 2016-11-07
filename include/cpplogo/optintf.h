@@ -41,8 +41,8 @@ class OptIntf {
   protected:
     virtual void BeginStep() = 0;
     virtual void EndStep() = 0;
-    virtual int CalculateMaxDepth() const = 0;
-    virtual void ExpandBestAtDepth(int depth) = 0;
+    virtual size_t CalculateMaxDepth() const = 0;
+    virtual void ExpandBestAtDepth(size_t depth) = 0;
 
   protected:
     // Variables from the options structure

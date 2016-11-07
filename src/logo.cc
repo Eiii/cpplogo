@@ -53,9 +53,9 @@ void LOGO::EndStep()
 * CalculateMaxDepth
 * Calculate the maximum depth for this algorithm.
 ***********************************************************/
-int LOGO::CalculateMaxDepth() const
+size_t LOGO::CalculateMaxDepth() const
 {
-  int soo_depth = SOO::CalculateMaxDepth();
+  size_t soo_depth = SOO::CalculateMaxDepth();
   return soo_depth / depthset_width_;
 } /* CalculateMaxDepth() */
 
@@ -66,17 +66,17 @@ int LOGO::CalculateMaxDepth() const
 * multiple depth levels in the space, according to the 
 * width.
 ***********************************************************/
-Node* LOGO::BestNodeAtDepth(int depthset_id)
+const Node* LOGO::BestNodeAtDepth(size_t depthset_id) const
 {
   // Find the minimum/maximum 'true' depth levels for this depth index
-  int min_depth = depthset_id*depthset_width_;
-  int max_depth = min_depth+depthset_width_-1;
+  size_t min_depth = depthset_id*depthset_width_;
+  size_t max_depth = min_depth+depthset_width_-1;
   LOG(trace) << "Considering nodes from " << min_depth << "-" << max_depth;
 
   // Find the best node within those depths
-  Node* best_node = nullptr;
-  for (int d = min_depth; d <= max_depth; d++) {
-    Node* depth_best = SOO::BestNodeAtDepth(d);   
+  const Node* best_node = nullptr;
+  for (size_t d = min_depth; d <= max_depth; d++) {
+    const Node* depth_best = SOO::BestNodeAtDepth(d);   
     if (depth_best == nullptr) {
       continue;
     }

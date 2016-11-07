@@ -27,8 +27,8 @@ class LOGO : virtual public SOO {
 
   protected:
     void EndStep() override;
-    int CalculateMaxDepth() const override;
-    Node* BestNodeAtDepth(int depthset_id) override;
+    size_t CalculateMaxDepth() const override;
+    const Node* BestNodeAtDepth(size_t depthset_id) const override;
 
   protected:
     // Variables from the options structure

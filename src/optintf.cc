@@ -31,7 +31,7 @@ void OptIntf::Step() {
 
   // For each 'depth level', expand the best node at that
   // depth.
-  for (int depth = 0; depth <= CalculateMaxDepth(); depth++) {
+  for (size_t depth = 0; depth <= CalculateMaxDepth(); depth++) {
     ExpandBestAtDepth(depth);
   }
 

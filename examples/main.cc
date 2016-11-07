@@ -64,7 +64,7 @@ void evaluate_many(const Function& fn, double epsilon, int count, OptArgs... arg
     }
     obs.push_back(alg.num_observations());
   }
-  LOG(output) << "# iterations over " << count << " runs: ";
+  LOG(output) << "# evaluations over " << count << " runs: ";
   LOG(output) << "  Min: " << *std::min_element(obs.begin(), obs.end());
   LOG(output) << "  Max: " << *std::max_element(obs.begin(), obs.end());
   double avg = std::accumulate(obs.begin(), obs.end(), 0) 

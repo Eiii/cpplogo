@@ -54,10 +54,10 @@ void SOO::EndStep()
 * CalculateMaxDepth
 * TODO: This should probably return a size_t
 ***********************************************************/
-int SOO::CalculateMaxDepth() const
+size_t SOO::CalculateMaxDepth() const
 {
-  int max_depth = std::sqrt(num_expansions_);
-  max_depth = std::min(max_depth, static_cast<int>(space_.size()));
+  size_t max_depth = std::sqrt(num_expansions_);
+  max_depth = std::min(max_depth, space_.size());
   LOG(trace) << "Max depth = " << max_depth;
   return max_depth;
 } /* CalculateMaxDepth() */
@@ -67,7 +67,7 @@ int SOO::CalculateMaxDepth() const
 * Expand the node with the best value at the specified
 * depth.
 ***********************************************************/
-void SOO::ExpandBestAtDepth(int depth)
+void SOO::ExpandBestAtDepth(size_t depth)
 {
   LOG(trace) << "Expanding depth " << depth;
   // Find the best node
@@ -112,10 +112,10 @@ void SOO::ExpandBestAtDepth(int depth)
 * Returns a pointer to that node. Returns a null pointer
 * if no nodes exist at the requested depth.
 ***********************************************************/
-const Node* SOO::BestNodeAtDepth(int depth) const
+const Node* SOO::BestNodeAtDepth(size_t depth) const
 {
   // If the depth doesn't exist, it can't have a best node
-  if (static_cast<size_t>(depth) >= space_.size()) return nullptr;
+  if (depth >= space_.size()) return nullptr;
   const vector<Node>& nodes = space_.at(depth);
   const Node* best_node = nullptr;
 
@@ -141,7 +141,7 @@ const Node* SOO::BestNodeAtDepth(int depth) const
 * Do some fancy casting to return a non-const pointer to the
 * best node at the requested depth.
 ***********************************************************/
-Node* SOO::BestNodeAtDepth(int depth) 
+Node* SOO::BestNodeAtDepth(size_t depth) 
 {
   const auto cthis = const_cast<const SOO*>(this);
   return const_cast<Node*>(cthis->BestNodeAtDepth(depth));
