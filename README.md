@@ -6,10 +6,10 @@ _Algorithm_ | _Reference_ | _Status_
 ------------|-------------|---------
 SOO | [From Bandits to Monte-Carlo Tree Search: The Optimistic Principle Applied to Optimization and Planning](https://hal.archives-ouvertes.fr/hal-00747575) | Complete
 LOGO | [Global Continuous Optimization with Error Bound and Fast Convergence](https://arxiv.org/abs/1607.04817) | Complete
-BaMSOO | [Bayesian Multi-Scale Optimistic Optimization](http://jmlr.org/proceedings/papers/v33/wang14d.pdf) | In development
+BaMSOO | [Bayesian Multi-Scale Optimistic Optimization](http://jmlr.org/proceedings/papers/v33/wang14d.pdf) | Implemented on ```dev``` branch
 
 ## Build Instructions
-This library was developed using g++ 5.2.0, CMake 3.5.2, and Boost 1.61.0 on CentOS 7.2.1511. Earlier versions of those tools would likely still work provided that they support the C++14 standard and the Boost.Log library.
+This library was developed using gcc 5.2.0, CMake 3.5.2, and Boost 1.61.0 on CentOS 7.2.1511. Earlier versions of those tools would likely still work provided that they support the C++14 standard and the Boost.Log library.
 
 To build the cpplogo library on its own:
 ```
