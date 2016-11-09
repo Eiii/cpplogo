@@ -15,6 +15,20 @@ InitBaMSOO::InitBaMSOO(const Options& options) :
 } /* InitBaMSOO() */
 
 /***********************************************************
+* InitialSamples
+* Return the samples that the GP is initialized with.
+***********************************************************/
+std::vector<std::pair<vectord, double>> InitBaMSOO::InitialSamples() const
+{
+  std::vector<std::pair<vectord, double>> samples;
+  assert(init_xs_.size() == init_ys_.size());
+  for (size_t i = 0; i < init_xs_.size(); i++) {
+    samples.emplace_back(init_xs_[i], init_ys_[i]); 
+  }
+  return samples;
+} /* InitialSamples() */
+
+/***********************************************************
 * default_params
 * Helper function to initialize the bayesopt library's
 * parameters.

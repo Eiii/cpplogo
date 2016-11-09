@@ -30,6 +30,9 @@ class InitBaMSOO : public RandomBaMSOO {
     InitBaMSOO(const Options& options);
     virtual ~InitBaMSOO() = default;
 
+  public:
+    std::vector<std::pair<vectord, double>> InitialSamples() const;
+
   protected:
     void BuildGP() override;
 
