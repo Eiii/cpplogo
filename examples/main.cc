@@ -131,7 +131,7 @@ void test_all_on_fn(const Function& fn) {
 
 int main() {
   //Replace `output` with `trace` for more detailed log output.
-  init_logging(output);
+  init_logging(trace);
 
   LOG(output) << "=== rosenbrock_2 ===";
   test_all_on_fn(rosenbrock2_fn);

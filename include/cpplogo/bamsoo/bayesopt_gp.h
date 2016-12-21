@@ -1,8 +1,10 @@
 #pragma once
-#include "bayesopt.hpp"
+#include "bayesopt/bayesopt.hpp"
 #include "cpplogo/types.h"
 
 namespace cpplogo {
+
+using bayesopt::vecOfvec;
 
 class GP : public bayesopt::ContinuousModel
 {
