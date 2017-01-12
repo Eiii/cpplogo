@@ -8,9 +8,20 @@ namespace cpplogo {
 * BaMSOO constructor
 ***********************************************************/
 BaMSOO::BaMSOO(const Options& options) :
-  SOO(options), gp_(nullptr) 
+  SOO(options), gp_(nullptr), gp_outdated_(true)
 {
 } /* BaMSOO() */
+
+/***********************************************************
+* BeginStep
+* BaMSOO might want to build a new GP if necessary at
+* the beginning of each step.
+***********************************************************/
+void BaMSOO::BeginStep() 
+{
+  SOO::BeginStep();
+  if (gp_outdated_) BuildGP();
+} /* BeginStep() */
 
 /***********************************************************
 * ObserveNodes
@@ -20,7 +31,6 @@ BaMSOO::BaMSOO(const Options& options) :
 ***********************************************************/
 void BaMSOO::ObserveNodes(std::vector<Node>* nodes)
 {
-  BuildGP();
   SOO::ObserveNodes(nodes);
 } /* ObserveNodes() */
 
@@ -32,7 +42,7 @@ void BaMSOO::ObserveNodes(std::vector<Node>* nodes)
 * we effectively ignore it until we don't have any other
 * option.
 ***********************************************************/
-void BaMSOO::ObserveNode(Node* node)
+bool BaMSOO::ObserveNode(Node* node)
 {
   bool sample_fn = false;
   double upper_bound, lower_bound;
@@ -71,10 +81,13 @@ void BaMSOO::ObserveNode(Node* node)
   }
 
   if (sample_fn) {
-    SOO::ObserveNode(node);
+    bool observed = SOO::ObserveNode(node);
+    if (observed) gp_outdated_ = true;
+    return observed;
   } else {
     LOG(trace) << "Using lower bound -- setting to " << lower_bound;
     node->SetFakeValue(lower_bound);
+    return false;
   }
 } /* ObserveNode() */
 
@@ -188,6 +201,7 @@ void BaMSOO::InitGPPtr(const vecOfvec& xs, const vectord& ys)
     LOG(trace) << "Building GP with " << xs.size() << " samples.";
     gp_.reset(new GP(default_params(), fn_, dim_));
     gp_->initializeOptimizationWithPoints(xs, ys);
+    gp_outdated_ = false;
   }
 } /* InitGPPtr() */
 

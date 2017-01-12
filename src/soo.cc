@@ -250,13 +250,13 @@ void SOO::ObserveNodes(vector<Node>* nodes)
 * ObserveNode
 * Observe a value for the specified node.
 ***********************************************************/
-void SOO::ObserveNode(Node* node)
+bool SOO::ObserveNode(Node* node)
 {
   // If the node already has a value, then we don't have to 
   // do anything.
   if (node->has_value() && !node->is_fake_value()) {
     LOG(trace) << "Already had: " << *node;
-    return;
+    return false;
   }
 
   // Observe the value and set it
@@ -268,6 +268,7 @@ void SOO::ObserveNode(Node* node)
   // get deleted in a future expansion during this step!
   step_observed_nodes_.push_back(*node);
   LOG(trace) << "Observed: " << *node;
+  return true;
 } /* ObserveNode() */
 
 }

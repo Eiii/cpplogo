@@ -25,8 +25,9 @@ class BaMSOO : virtual public SOO {
     virtual ~BaMSOO() = default;
 
   protected:
+    void BeginStep() override;
     void ObserveNodes(std::vector<Node>* nodes) override;
-    void ObserveNode(Node* node) override;
+    bool ObserveNode(Node* node) override;
     std::vector<Node> ExpandNode(Node* node) override;
 
   protected:
@@ -38,6 +39,7 @@ class BaMSOO : virtual public SOO {
 
   protected:
     std::unique_ptr<GP> gp_; // Pointer to GP used to estimate node bounds
+    bool gp_outdated_; // Flag to indicate the GP needs to be re-built with new points
 };
 
 }

@@ -34,7 +34,7 @@ double obs_error(double best, const Function& fn)
 
 //Evaluate a given SOO-like algorithm on a given function until
 //it reaches error epsilon
-constexpr int c_max_obs = 4000;
+constexpr int c_max_obs = 300;
 constexpr int c_num_children = 3;
 
 template <typename Alg, typename... OptArgs>
@@ -44,9 +44,11 @@ void evaluate(const Function& fn, double epsilon, OptArgs... args)
   Alg alg(opt);
 
   double best = alg.BestNode()->value();
+  int it = 0;
   while (obs_error(best, fn) > epsilon && !alg.IsFinished()) {
     alg.Step();  
     best = alg.BestNode()->value();
+    LOG(output) << ++it << " / " << alg.num_observations();
   }
   LOG(output) << "Number of function evaluations: " << alg.num_observations();
   LOG(output) << "Error: " << obs_error(alg.BestNode()->value(), fn);
@@ -131,14 +133,10 @@ void test_all_on_fn(const Function& fn) {
 
 int main() {
   //Replace `output` with `trace` for more detailed log output.
-  init_logging(trace);
+  init_logging(output);
 
-  LOG(output) << "=== rosenbrock_2 ===";
-  test_all_on_fn(rosenbrock2_fn);
-  /*
-  LOG(output) << "=== rosenbrock_10 ===";
-  test_all_on_fn(rosenbrock10_fn);
-  */
+  LOG(output) << "-- BaMSOO:";
+  evaluate<BaMSOO>(rosenbrock2_fn, 0);
 
   return 0;
 }
