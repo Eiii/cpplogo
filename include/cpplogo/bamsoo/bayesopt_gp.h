@@ -1,32 +1,48 @@
 #pragma once
 #include "bayesopt/bayesopt.hpp"
 #include "cpplogo/types.h"
+#include "posteriormodel.hpp"
+#include "randgen.hpp"
+
+#include <memory>
 
 namespace cpplogo {
 
 using bayesopt::vecOfvec;
 
-class GP : public bayesopt::ContinuousModel
+class GP
 {
   public:
     GP(bopt_params params, const ObjectiveFn& fn, int dim) : 
-      ContinuousModel(dim, params), fn_(fn) {}
-
-    double evaluateSample(const boost::numeric::ublas::vector<double> &query)
+    fn_(fn), model_(nullptr), rng_(), samples_(0)
     {
-      return -fn_(query);
+      FILELog::ReportingLevel() = logERROR;
+      rng_.seed(params.random_seed);
+      model_.reset(bayesopt::PosteriorModel::create(dim, params, rng_));
     }
 
-    bool checkReachability(const boost::numeric::ublas::vector<double> &query)
-    {
-      (void)query;
-      return true;
+    bayesopt::ProbabilityDistribution* GetPrediction(const vectord& x) { 
+      assert(IsValid());
+      return model_->getPrediction(x); 
     }
-
+    void FitModel() { model_->updateHyperParameters(); model_->fitSurrogateModel(); }
+    void AddSample(const vectord& x, double y) { 
+      if (samples_ == 0) {
+        model_->setSample(x, y);
+      } else {
+        model_->addSample(x, y); 
+      }
+      samples_++; 
+      model_->updateSurrogateModel(); 
+    }
+    bool IsValid() { return samples_ >= 2; }
     const ObjectiveFn& fn() const { return fn_; }
 
   protected:
     const ObjectiveFn& fn_;
+    std::unique_ptr<bayesopt::PosteriorModel> model_;
+    randEngine rng_;
+    int samples_;
 };
 
 }

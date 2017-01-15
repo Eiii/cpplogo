@@ -31,15 +31,7 @@ class BaMSOO : virtual public SOO {
     std::vector<Node> ExpandNode(Node* node) override;
 
   protected:
-    virtual void BuildGP();
-
-  protected:
-    void AddExistingPoints(vecOfvec* xs, std::vector<double>* ys);
-    void InitGPPtr(const vecOfvec& xs, const vectord& ys);
-
-  protected:
-    std::unique_ptr<GP> gp_; // Pointer to GP used to estimate node bounds
-    bool gp_outdated_; // Flag to indicate the GP needs to be re-built with new points
+    GP gp_;
 };
 
 }

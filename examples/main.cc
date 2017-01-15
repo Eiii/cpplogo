@@ -8,7 +8,6 @@
 #include "cpplogo/randomlogo.h"
 #include "cpplogo/bamsoo.h"
 #include "cpplogo/randombamsoo.h"
-#include "cpplogo/initbamsoo.h"
 #include "cpplogo/bamlogo.h"
 #include "cpplogo/randombamlogo.h"
 
@@ -34,7 +33,7 @@ double obs_error(double best, const Function& fn)
 
 //Evaluate a given SOO-like algorithm on a given function until
 //it reaches error epsilon
-constexpr int c_max_obs = 300;
+constexpr int c_max_obs = 500;
 constexpr int c_num_children = 3;
 
 template <typename Alg, typename... OptArgs>
@@ -44,11 +43,9 @@ void evaluate(const Function& fn, double epsilon, OptArgs... args)
   Alg alg(opt);
 
   double best = alg.BestNode()->value();
-  int it = 0;
   while (obs_error(best, fn) > epsilon && !alg.IsFinished()) {
     alg.Step();  
     best = alg.BestNode()->value();
-    LOG(output) << ++it << " / " << alg.num_observations();
   }
   LOG(output) << "Number of function evaluations: " << alg.num_observations();
   LOG(output) << "Error: " << obs_error(alg.BestNode()->value(), fn);
@@ -125,10 +122,6 @@ void test_all_on_fn(const Function& fn) {
   evaluate_many<RandomBaMSOO>(fn, 1e-4, 10);
   LOG(output) << "-- RandomBaMLOGO:";
   evaluate_many<RandomBaMLOGO>(fn, 1e-4, 10, logo_w);
-  /* TODO: This takes too long?
-  LOG(output) << "-- InitBaMSOO:";
-  evaluate_many<InitBaMSOO>(fn, 1e-4, 3, 10);
-  */
 }
 
 int main() {

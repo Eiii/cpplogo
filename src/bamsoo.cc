@@ -5,93 +5,6 @@
 namespace cpplogo {
 
 /***********************************************************
-* BaMSOO constructor
-***********************************************************/
-BaMSOO::BaMSOO(const Options& options) :
-  SOO(options), gp_(nullptr), gp_outdated_(true)
-{
-} /* BaMSOO() */
-
-/***********************************************************
-* BeginStep
-* BaMSOO might want to build a new GP if necessary at
-* the beginning of each step.
-***********************************************************/
-void BaMSOO::BeginStep() 
-{
-  SOO::BeginStep();
-  if (gp_outdated_) BuildGP();
-} /* BeginStep() */
-
-/***********************************************************
-* ObserveNodes
-* When we need to observe values for some nodes, first
-* build a GP using our past observations before making the
-* observations.
-***********************************************************/
-void BaMSOO::ObserveNodes(std::vector<Node>* nodes)
-{
-  SOO::ObserveNodes(nodes);
-} /* ObserveNodes() */
-
-/***********************************************************
-* ObserveNode
-* Only 'actually' observe a node's value if the GP's upper
-* bound for that node is greater than the best value we've
-* seen so far. Otherwise, assign it the GP's lower bound so
-* we effectively ignore it until we don't have any other
-* option.
-***********************************************************/
-bool BaMSOO::ObserveNode(Node* node)
-{
-  bool sample_fn = false;
-  double upper_bound, lower_bound;
-
-  //If we don't have enough info to build a gp, just
-  //observe the node.
-  //If we already have a value for this node, then we don't
-  //need to build the gp-- just pretend to observe it (which
-  //does nothing)
-  //Otherwise, calculate the bounds and figure out if we
-  //should really observe it or not.
-  if (!gp_ || (node->has_value() && !node->is_fake_value())) {
-    LOG(trace) << "Skipping GP generation";
-    sample_fn = true;
-  } else {
-    //Calculate UCB/LCB
-    auto center = node->Center();
-    bayesopt::ProbabilityDistribution* prediction = gp_->getPrediction(center);
-    double mean = prediction->getMean();
-    double std = prediction->getStd();
-    double n = 0.5; //TODO - ???
-    double mult = std::sqrt(
-                    2.0 * 
-                    std::log(
-                      M_PI*M_PI*num_node_evals_*num_node_evals_/(6.0*n)
-                    )
-                  );
-    upper_bound = mean + mult*std;
-    lower_bound = mean - mult*std;
-    LOG(trace) << "Mean: " << mean;
-    LOG(trace) << "STD:  " << std;
-    LOG(trace) << "Mult: " << mult;
-
-    const Node* best_node = BestNode();
-    sample_fn = (upper_bound > best_node->value());
-  }
-
-  if (sample_fn) {
-    bool observed = SOO::ObserveNode(node);
-    if (observed) gp_outdated_ = true;
-    return observed;
-  } else {
-    LOG(trace) << "Using lower bound -- setting to " << lower_bound;
-    node->SetFakeValue(lower_bound);
-    return false;
-  }
-} /* ObserveNode() */
-
-/***********************************************************
 * default_params
 * Helper function to initialize the bayesopt library's
 * parameters.
@@ -136,6 +49,95 @@ bopt_params default_params()
 }
 
 /***********************************************************
+* BaMSOO constructor
+***********************************************************/
+BaMSOO::BaMSOO(const Options& options) :
+  SOO(options), gp_(default_params(), options.fn, options.dim)
+{
+} /* BaMSOO() */
+
+/***********************************************************
+* BeginStep
+* BaMSOO might want to build a new GP if necessary at
+* the beginning of each step.
+***********************************************************/
+void BaMSOO::BeginStep() 
+{
+  SOO::BeginStep();
+  if (gp_.IsValid()) gp_.FitModel();
+} /* BeginStep() */
+
+/***********************************************************
+* ObserveNodes
+* When we need to observe values for some nodes, first
+* build a GP using our past observations before making the
+* observations.
+***********************************************************/
+void BaMSOO::ObserveNodes(std::vector<Node>* nodes)
+{
+  SOO::ObserveNodes(nodes);
+} /* ObserveNodes() */
+
+/***********************************************************
+* ObserveNode
+* Only 'actually' observe a node's value if the GP's upper
+* bound for that node is greater than the best value we've
+* seen so far. Otherwise, assign it the GP's lower bound so
+* we effectively ignore it until we don't have any other
+* option.
+***********************************************************/
+bool BaMSOO::ObserveNode(Node* node)
+{
+  bool sample_fn = false;
+  double upper_bound, lower_bound;
+
+  //If we don't have enough info to build a gp, just
+  //observe the node.
+  //If we already have a value for this node, then we don't
+  //need to build the gp-- just pretend to observe it (which
+  //does nothing)
+  //Otherwise, calculate the bounds and figure out if we
+  //should really observe it or not.
+  if (!gp_.IsValid() || (node->has_value() && !node->is_fake_value())) {
+    LOG(trace) << "Skipping GP generation";
+    sample_fn = true;
+  } else {
+    //Calculate UCB/LCB
+    auto center = node->Center();
+    bayesopt::ProbabilityDistribution* prediction = gp_.GetPrediction(center);
+    double mean = prediction->getMean();
+    double std = prediction->getStd();
+    double n = 0.5; //TODO - ???
+    double mult = std::sqrt(
+                    2.0 * 
+                    std::log(
+                      M_PI*M_PI*num_node_evals_*num_node_evals_/(6.0*n)
+                    )
+                  );
+    upper_bound = mean + mult*std;
+    lower_bound = mean - mult*std;
+    LOG(trace) << "Mean: " << mean;
+    LOG(trace) << "STD:  " << std;
+    LOG(trace) << "Mult: " << mult;
+
+    sample_fn = (upper_bound > BestNode()->value());
+  }
+
+  if (sample_fn) {
+    bool observed = SOO::ObserveNode(node);
+    if (observed) {
+      const Node& obs_node = step_observed_nodes_.back();  
+      gp_.AddSample(obs_node.Center(), obs_node.value());
+    }
+    return observed;
+  } else {
+    LOG(trace) << "Using lower bound -- setting to " << lower_bound;
+    node->SetFakeValue(lower_bound);
+    return false;
+  }
+} /* ObserveNode() */
+
+/***********************************************************
 * ExpandNode
 * TODO: Investigate if this is a good idea or not.
 * When we expand a node, make sure it has a real value 
@@ -153,56 +155,5 @@ std::vector<Node> BaMSOO::ExpandNode(Node* node)
   */
   return SOO::ExpandNode(node);
 } /* ExpandNode() */
-
-/***********************************************************
-* BuildGP
-* Build a GP from the real observed samples so far.
-***********************************************************/
-void BaMSOO::BuildGP()
-{
-  vecOfvec xs; std::vector<double> std_ys;
-
-  AddExistingPoints(&xs, &std_ys);
-
-  vectord ys = std_to_boost(std_ys);
-
-  InitGPPtr(xs, ys);
-} /* BuildGP() */
-
-/***********************************************************
-* AddExistingPoints
-* Add all observed real samples to the argument vectors.
-***********************************************************/
-void BaMSOO::AddExistingPoints(vecOfvec* xs, std::vector<double>* ys)
-{
-  //Init GP with all real observations
-  for (const auto& node_list : space_) {
-    for (const auto& node : node_list) {
-      if (node.has_value() && !node.is_fake_value()) {
-        xs->push_back(node.Center());  
-        ys->push_back(node.value());
-      }
-    }
-  }
-} /* AddExistingPoints() */
-
-/***********************************************************
-* InitGPPtr
-* Use the provided sample data to initialize the object's
-* GP for use during node observation.
-***********************************************************/
-void BaMSOO::InitGPPtr(const vecOfvec& xs, const vectord& ys)
-{
-  if (xs.size() < 2) {
-    LOG(trace) << "Not enough data to build GP";
-    gp_.reset(nullptr);
-  } else {
-    assert(xs.size() == ys.size());
-    LOG(trace) << "Building GP with " << xs.size() << " samples.";
-    gp_.reset(new GP(default_params(), fn_, dim_));
-    gp_->initializeOptimizationWithPoints(xs, ys);
-    gp_outdated_ = false;
-  }
-} /* InitGPPtr() */
 
 }
