@@ -29,11 +29,7 @@ void OptIntf::Optimize()
 void OptIntf::Step() {
   BeginStep();
 
-  // For each 'depth level', expand the best node at that
-  // depth.
-  for (size_t depth = 0; depth <= CalculateMaxDepth(); depth++) {
-    ExpandBestAtDepth(depth);
-  }
+  StepExpandNodes();
 
   EndStep();
 } /* Step() */

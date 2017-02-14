@@ -63,6 +63,18 @@ size_t SOO::CalculateMaxDepth() const
 } /* CalculateMaxDepth() */
 
 /***********************************************************
+* StepExpandNodes
+***********************************************************/
+void SOO::StepExpandNodes()
+{
+  // For each 'depth level', expand the best node at that
+  // depth.
+  for (size_t depth = 0; depth <= CalculateMaxDepth(); depth++) {
+    ExpandBestAtDepth(depth);
+  }
+} /* StepExpandNodes() */
+
+/***********************************************************
 * ExpandBestAtDepth
 * Expand the node with the best value at the specified
 * depth.
