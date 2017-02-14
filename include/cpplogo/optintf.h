@@ -42,7 +42,7 @@ class OptIntf {
     virtual void BeginStep() = 0;
     virtual void EndStep() = 0;
     virtual size_t CalculateMaxDepth() const = 0;
-    virtual void ExpandBestAtDepth(size_t depth) = 0;
+    virtual void StepExpandNodes() = 0;
 
   protected:
     // Variables from the options structure
