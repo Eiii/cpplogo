@@ -3,6 +3,7 @@
 #include "cpplogo/logging.h"
 #include "cpplogo/node.h"
 #include "cpplogo/soo.h"
+#include "cpplogo/doo.h"
 #include "cpplogo/randomsoo.h"
 #include "cpplogo/logo.h"
 #include "cpplogo/randomlogo.h"
@@ -128,8 +129,13 @@ int main() {
   //Replace `output` with `trace` for more detailed log output.
   init_logging(output);
 
-  LOG(output) << "-- BaMSOO:";
-  evaluate<BaMSOO>(rosenbrock2_fn, 0);
+  LOG(output) << "-- DOO:";
+  std::vector<double> cs = {10000.0, 50000.0, 300000.0};
+
+  for (double c : cs) {
+    LOG(output) << "c = " << c;
+    evaluate<DOO>(rosenbrock2_fn, 0, c);
+  }
 
   return 0;
 }

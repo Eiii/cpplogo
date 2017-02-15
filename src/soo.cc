@@ -12,22 +12,11 @@ namespace cpplogo {
 ***********************************************************/
 SOO::SOO(const Options& opt) :
   OptIntf(opt),
-  num_children_(opt.num_children),
   vmax_(),
   num_expansions_(1),
   num_node_evals_(1),
-  space_(),
   step_observed_nodes_()
 { 
-  // Create top-level node and observe its value
-  vectord edges(dim_), sizes(dim_);
-  for (int i = 0; i < dim_; i++) {
-    edges[i] = 0.0;
-    sizes[i] = 1.0;
-  }
-  space_.emplace_back();
-  space_[0].emplace_back(edges, sizes, 0);
-  ObserveNode(&space_[0].back());
 } /* SOO() */
 
 /***********************************************************
@@ -100,17 +89,8 @@ void SOO::ExpandBestAtDepth(size_t depth)
     num_expansions_ += 1; 
     // Make observations for each un-observed node among the children
     ObserveNodes(&children);
-
-    // Make sure we have a place to put the next level of nodes
-    int next_depth = best_node->depth()+1;
-    if (space_.size() <= static_cast<size_t>(next_depth)) {
-      space_.resize(next_depth+1);
-    }
-
-    // Put the expanded nodes into the appropriate level in the space
-    auto& next_level = space_[next_depth];
-    next_level.insert(next_level.end(), children.begin(), children.end());
-
+    // Add children to space
+    AddNodes(children);
     // Delete the node that was expanded
     RemoveNode(best_node);
   }
@@ -160,75 +140,6 @@ Node* SOO::BestNodeAtDepth(size_t depth)
 } /* BestNodeAtDepth() */
 
 /***********************************************************
-* BestNode
-* Returns a pointer to the best node in the entire space.
-* TODO: This should probably leverage BestNodeAtDepth
-***********************************************************/
-const Node* SOO::BestNode() const
-{
-  const Node* best_node = nullptr;
-  for (const auto& nodes : space_) {
-    for (const auto& n : nodes) {
-      if (best_node == nullptr || n.value() > best_node->value()) {
-        best_node = &n;
-      }
-    }
-  }
-  return best_node;
-} /* BestNode() */
-
-/***********************************************************
-* RemoveNode
-* Remove the specified node from the node space.
-***********************************************************/
-void SOO::RemoveNode(Node* node)
-{
-  // Get a reference to the depth the node is at
-  auto& depth_list = space_[node->depth()];
-
-  // Use fancy STL stuff to find the iterator to the node in its depth
-  auto pred = [node](const Node& n) { return &n == node; };
-  auto it = std::find_if(depth_list.begin(), depth_list.end(), pred);
-  assert(it != depth_list.end());
-
-  depth_list.erase(it);
-} /* RemoveNode() */
-
-/***********************************************************
-* ExpandNode
-* Expand the specified node.
-* Returns a list of the resultant child nodes.
-***********************************************************/
-vector<Node> SOO::ExpandNode(Node* node)
-{
-  LOG(trace) << "Expanding " << *node;
-  vector<Node> children;
-
-  //Choose which dimension to split along
-  size_t split_dim = ChooseSplitDimension(node);
-
-  //Calculate new values for child nodes
-  vectord edges = node->edges();
-  vectord sizes = node->sizes();
-  int depth = node->depth()+1;
-  double new_size = sizes[split_dim]/num_children_;
-  sizes[split_dim] = new_size;
-
-  //Create child nodes
-  for (int i = 0; i < num_children_; i++) {
-    children.emplace_back(edges, sizes, depth);
-    edges[split_dim] += new_size;
-
-    // ...the center child node can just take its value from its parent!
-    assert(num_children_ % 2 == 1);
-    if (i == num_children_/2 && !node->is_fake_value()) {
-      children.back().SetValue(node->value());
-    }
-  }
-  return children;
-} /* ExpandNode() */
-
-/***********************************************************
 * ChooseSplitDimension
 * Return which dimension the specified node should be split
 * along.
@@ -248,39 +159,18 @@ size_t SOO::ChooseSplitDimension(const Node* node) const
 } /* ChooseSplitDimension() */
 
 /***********************************************************
-* ObserveNodes
-* Observe values for each node in a list of nodes.
-***********************************************************/
-void SOO::ObserveNodes(vector<Node>* nodes)
-{
-  for (auto& node : *nodes) {
-    ObserveNode(&node);
-  }
-} /* ObserveNodes() */
-
-/***********************************************************
 * ObserveNode
 * Observe a value for the specified node.
 ***********************************************************/
 bool SOO::ObserveNode(Node* node)
 {
-  // If the node already has a value, then we don't have to 
-  // do anything.
-  if (node->has_value() && !node->is_fake_value()) {
-    LOG(trace) << "Already had: " << *node;
-    return false;
-  }
-
-  // Observe the value and set it
-  double value = fn_(node->Center());
-  num_observations_++;
-  node->SetValue(value);
+  bool result = OptIntf::ObserveNode(node);
 
   // We need to copy the node here, otherwise it might
   // get deleted in a future expansion during this step!
   step_observed_nodes_.push_back(*node);
-  LOG(trace) << "Observed: " << *node;
-  return true;
+
+  return result;
 } /* ObserveNode() */
 
 }
