@@ -147,12 +147,9 @@ bool BaMSOO::ObserveNode(Node* node)
 ***********************************************************/
 std::vector<Node> BaMSOO::ExpandNode(Node* node)
 {
-  // Disabled for now-- seems to degrade performance
-  /*
   if (node->is_fake_value()) {
     SOO::ObserveNode(node);
   }
-  */
   return SOO::ExpandNode(node);
 } /* ExpandNode() */
 
