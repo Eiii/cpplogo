@@ -85,7 +85,7 @@ const Node* LOGO::BestNodeAtDepth(size_t depthset_id) const
     }
   }
   return best_node;
-} /* ExpandBestAtDepth() */
+} /* BestNodeAtDepth() */
 
 }
 
