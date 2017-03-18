@@ -91,10 +91,7 @@ void SOO::ExpandBestAtDepth(size_t depth)
   LOG(trace) << "Best node = " << *best_node;
 
   // Expand the node and evaluate its children if the best node is good enough
-  if (best_node->value() > vmax_) {
-    vmax_ = best_node->value();
-    LOG(trace) << "New vmax = " << vmax_;
-
+  if (NodeShouldBeExpanded(best_node)) {
     // Get the resultant children from the expansion
     vector<Node> children = ExpandNode(best_node);
     num_expansions_ += 1; 
@@ -116,6 +113,20 @@ void SOO::ExpandBestAtDepth(size_t depth)
   }
   num_node_evals_ += 1;
 } /* ExpandBestAtDepth() */
+
+/***********************************************************
+* NodeShouldBeExpanded
+***********************************************************/
+bool SOO::NodeShouldBeExpanded(const Node* node)
+{
+  if (node->value() > vmax_) {
+    vmax_ = node->value();
+    LOG(trace) << "New vmax = " << vmax_;
+    return true;
+  } else {
+    return false;
+  }
+} /* NodeShouldBeExpanded() */
 
 /***********************************************************
 * BestNodeAtDepth
