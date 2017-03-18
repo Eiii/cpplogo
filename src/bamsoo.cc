@@ -52,7 +52,7 @@ bopt_params default_params()
 * BaMSOO constructor
 ***********************************************************/
 BaMSOO::BaMSOO(const Options& options) :
-  SOO(options), gp_(default_params(), options.fn, options.dim)
+  SOO(options), n_(0.5), gp_(default_params(), options.fn, options.dim)
 {
 } /* BaMSOO() */
 
@@ -102,24 +102,8 @@ bool BaMSOO::ObserveNode(Node* node)
     LOG(trace) << "Skipping GP generation";
     sample_fn = true;
   } else {
-    //Calculate UCB/LCB
-    auto center = node->Center();
-    bayesopt::ProbabilityDistribution* prediction = gp_.GetPrediction(center);
-    double mean = prediction->getMean();
-    double std = prediction->getStd();
-    double n = 0.5; //TODO - ???
-    double mult = std::sqrt(
-                    2.0 * 
-                    std::log(
-                      M_PI*M_PI*num_node_evals_*num_node_evals_/(6.0*n)
-                    )
-                  );
-    upper_bound = mean + mult*std;
-    lower_bound = mean - mult*std;
-    LOG(trace) << "Mean: " << mean;
-    LOG(trace) << "STD:  " << std;
-    LOG(trace) << "Mult: " << mult;
-
+    //Calculate+use UCB/LCB
+    std::tie(lower_bound, upper_bound) = CalculateLCBUCB(node);
     sample_fn = (upper_bound > BestNode()->value());
   }
 
@@ -132,6 +116,7 @@ bool BaMSOO::ObserveNode(Node* node)
     return observed;
   } else {
     LOG(trace) << "Using lower bound -- setting to " << lower_bound;
+    //If sample_fn is false, lower_bound must have been set.
     node->SetFakeValue(lower_bound);
     return false;
   }
@@ -139,11 +124,6 @@ bool BaMSOO::ObserveNode(Node* node)
 
 /***********************************************************
 * ExpandNode
-* TODO: Investigate if this is a good idea or not.
-* When we expand a node, make sure it has a real value 
-* before continuing! Otherwise we can just drill deeper
-* and deeper into a part of the space we don't know very
-* much about.
 ***********************************************************/
 std::vector<Node> BaMSOO::ExpandNode(Node* node)
 {
@@ -152,5 +132,28 @@ std::vector<Node> BaMSOO::ExpandNode(Node* node)
   }
   return SOO::ExpandNode(node);
 } /* ExpandNode() */
+
+/***********************************************************
+* CalculateLCBUCB
+***********************************************************/
+std::tuple<double, double> BaMSOO::CalculateLCBUCB(const Node* node)
+{
+  auto center = node->Center();
+  bayesopt::ProbabilityDistribution* prediction = gp_.GetPrediction(center);
+  double mean = prediction->getMean();
+  double std = prediction->getStd();
+  double mult = std::sqrt(
+                  2.0 * 
+                  std::log(
+                    M_PI*M_PI*num_node_evals_*num_node_evals_/(6.0*n_)
+                  )
+                );
+  double ucb = mean + mult*std;
+  double lcb = mean - mult*std;
+  LOG(trace) << "Mean: " << mean;
+  LOG(trace) << "STD:  " << std;
+  LOG(trace) << "Mult: " << mult;
+  return std::make_tuple(lcb, ucb);
+} /* CalculateLCBUCB() */
 
 }

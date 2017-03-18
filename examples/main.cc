@@ -129,7 +129,7 @@ int main() {
   init_logging(output);
 
   LOG(output) << "-- BaMSOO:";
-  evaluate<BaMSOO>(rosenbrock2_fn, 0);
+  evaluate<BaMSOO>(rosenbrock2_fn, 1e-2);
 
   return 0;
 }
