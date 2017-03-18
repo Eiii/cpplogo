@@ -29,8 +29,10 @@ class BaMSOO : virtual public SOO {
     void ObserveNodes(std::vector<Node>* nodes) override;
     bool ObserveNode(Node* node) override;
     std::vector<Node> ExpandNode(Node* node) override;
+    virtual std::tuple<double, double> CalculateLCBUCB(const Node* node);
 
   protected:
+    double n_;
     GP gp_;
 };
 
