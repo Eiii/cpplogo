@@ -11,6 +11,7 @@
 #include "cpplogo/bamlogo.h"
 #include "cpplogo/randombamlogo.h"
 #include "cpplogo/imgpo.h"
+#include "cpplogo/randomimgpo.h"
 
 using std::vector;
 using namespace cpplogo;
@@ -34,7 +35,7 @@ double obs_error(double best, const Function& fn)
 
 //Evaluate a given SOO-like algorithm on a given function until
 //it reaches error epsilon
-constexpr int c_max_obs = 500;
+constexpr int c_max_obs = 300;
 constexpr int c_num_children = 3;
 
 template <typename Alg, typename... OptArgs>
@@ -57,9 +58,10 @@ template <typename Alg, typename... OptArgs>
 void evaluate_many(const Function& fn, double epsilon, int count, OptArgs... args) 
 {
   vector<int> obs;
+  int seed_ofst = 1337;
   for (int seed = 0; seed < count; seed++) {
     typename Alg::Options opt(fn.fn, fn.dim, c_max_obs, c_num_children, 
-                              seed, args...);
+                              seed+seed_ofst, args...);
     Alg alg(opt);
 
     double best = alg.BestNode()->value();
@@ -68,6 +70,7 @@ void evaluate_many(const Function& fn, double epsilon, int count, OptArgs... arg
       best = alg.BestNode()->value();
     }
     obs.push_back(alg.num_observations());
+    LOG(output) << alg.num_observations();
   }
   LOG(output) << "# evaluations over " << count << " runs: ";
   LOG(output) << "  Min: " << *std::min_element(obs.begin(), obs.end());
@@ -129,12 +132,13 @@ int main() {
   //Replace `output` with `trace` for more detailed log output.
   init_logging(output);
 
+  auto fn = rosenbrock10_fn;
   LOG(output) << "-- SOO:";
-  evaluate<SOO>(rosenbrock2_fn, 1e-4);
+  evaluate<SOO>(fn, 1e-3);
   LOG(output) << "-- BaMSOO:";
-  evaluate<BaMSOO>(rosenbrock2_fn, 1e-4);
+  evaluate<BaMSOO>(fn, 1e-3);
   LOG(output) << "-- IMGPO:";
-  evaluate<IMGPO>(rosenbrock2_fn, 1e-4, 4);
+  evaluate<IMGPO>(fn, 1e-3, 4);
 
   return 0;
 }
