@@ -10,6 +10,7 @@
 #include "cpplogo/randombamsoo.h"
 #include "cpplogo/bamlogo.h"
 #include "cpplogo/randombamlogo.h"
+#include "cpplogo/imgpo.h"
 
 using std::vector;
 using namespace cpplogo;
@@ -128,8 +129,12 @@ int main() {
   //Replace `output` with `trace` for more detailed log output.
   init_logging(output);
 
+  LOG(output) << "-- SOO:";
+  evaluate<SOO>(rosenbrock2_fn, 1e-4);
   LOG(output) << "-- BaMSOO:";
-  evaluate<BaMSOO>(rosenbrock2_fn, 1e-2);
+  evaluate<BaMSOO>(rosenbrock2_fn, 1e-4);
+  LOG(output) << "-- IMGPO:";
+  evaluate<IMGPO>(rosenbrock2_fn, 1e-4, 4);
 
   return 0;
 }
