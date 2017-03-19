@@ -11,6 +11,7 @@
 #include "cpplogo/bamlogo.h"
 #include "cpplogo/randombamlogo.h"
 #include "cpplogo/imgpo.h"
+#include "cpplogo/randomimgpo.h"
 
 using std::vector;
 using namespace cpplogo;
@@ -57,9 +58,11 @@ template <typename Alg, typename... OptArgs>
 void evaluate_many(const Function& fn, double epsilon, int count, OptArgs... args) 
 {
   vector<int> obs;
+  vector<double> errors;
+  int seed_ofst = 1337;
   for (int seed = 0; seed < count; seed++) {
     typename Alg::Options opt(fn.fn, fn.dim, c_max_obs, c_num_children, 
-                              seed, args...);
+                              seed+seed_ofst, args...);
     Alg alg(opt);
 
     double best = alg.BestNode()->value();
@@ -68,6 +71,9 @@ void evaluate_many(const Function& fn, double epsilon, int count, OptArgs... arg
       best = alg.BestNode()->value();
     }
     obs.push_back(alg.num_observations());
+    double err = obs_error(alg.BestNode()->value(), fn);
+    errors.push_back(err);
+    LOG(output) << alg.num_observations() << " / " << err;
   }
   LOG(output) << "# evaluations over " << count << " runs: ";
   LOG(output) << "  Min: " << *std::min_element(obs.begin(), obs.end());
@@ -75,6 +81,10 @@ void evaluate_many(const Function& fn, double epsilon, int count, OptArgs... arg
   double avg = std::accumulate(obs.begin(), obs.end(), 0) 
                / static_cast<double>(obs.size());
   LOG(output) << "  Avg: " << avg;
+  double avg_err = static_cast<double>(std::accumulate(errors.begin(), errors.end(), 0))
+                   / static_cast<double>(errors.size());
+  LOG(output) << "  Err: " << avg_err;
+
 }
 
 //Objective functions
@@ -129,12 +139,9 @@ int main() {
   //Replace `output` with `trace` for more detailed log output.
   init_logging(output);
 
-  LOG(output) << "-- SOO:";
-  evaluate<SOO>(rosenbrock2_fn, 1e-4);
-  LOG(output) << "-- BaMSOO:";
-  evaluate<BaMSOO>(rosenbrock2_fn, 1e-4);
+  auto fn = rosenbrock2_fn;
   LOG(output) << "-- IMGPO:";
-  evaluate<IMGPO>(rosenbrock2_fn, 1e-4, 4);
+  evaluate_many<RandomIMGPO>(fn, 1e-3, 5, 4);
 
   return 0;
 }
