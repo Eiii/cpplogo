@@ -52,7 +52,6 @@ void SOO::EndStep()
 
 /***********************************************************
 * CalculateMaxDepth
-* TODO: This should probably return a size_t
 ***********************************************************/
 size_t SOO::CalculateMaxDepth() const
 {
@@ -69,7 +68,8 @@ void SOO::StepExpandNodes()
 {
   // For each 'depth level', expand the best node at that
   // depth.
-  for (size_t depth = 0; depth <= CalculateMaxDepth(); depth++) {
+  size_t dmax = CalculateMaxDepth();
+  for (size_t depth = 0; depth <= dmax; depth++) {
     ExpandBestAtDepth(depth);
   }
 } /* StepExpandNodes() */
@@ -117,7 +117,7 @@ void SOO::ExpandBestAtDepth(size_t depth)
 /***********************************************************
 * NodeShouldBeExpanded
 ***********************************************************/
-bool SOO::NodeShouldBeExpanded(const Node* node)
+bool SOO::NodeShouldBeExpanded(Node* node)
 {
   if (node->value() > vmax_) {
     vmax_ = node->value();

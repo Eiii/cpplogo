@@ -43,7 +43,7 @@ class SOO : public OptIntf {
   protected:
     virtual void ExpandBestAtDepth(size_t depth);
     virtual const Node* BestNodeAtDepth(size_t depth) const;
-    virtual bool NodeShouldBeExpanded(const Node* node);
+    virtual bool NodeShouldBeExpanded(Node* node);
     virtual size_t ChooseSplitDimension(const Node* node) const;
     virtual void ObserveNodes(std::vector<Node>* nodes);
     virtual bool ObserveNode(Node* node);
