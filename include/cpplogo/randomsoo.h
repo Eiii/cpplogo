@@ -31,6 +31,7 @@ class RandomSOO : virtual public SOO {
   protected:
     int seed_;
     mutable RandomEngine rng_;
+    std::vector<size_t> order_;
 };
 
 }
