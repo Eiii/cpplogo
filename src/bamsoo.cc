@@ -52,7 +52,7 @@ bopt_params default_params()
 * BaMSOO constructor
 ***********************************************************/
 BaMSOO::BaMSOO(const Options& options) :
-  SOO(options), n_(0.5), gp_(default_params(), options.fn, options.dim)
+  SOO(options), n_(0.05), gp_(default_params(), options.fn, options.dim)
 {
 } /* BaMSOO() */
 

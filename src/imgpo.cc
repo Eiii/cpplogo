@@ -33,7 +33,7 @@ void IMGPO::EndStep()
   if (increase_depth) {
     current_subtree_depth_ += 4;
   } else {
-    current_subtree_depth_ = std::max(current_subtree_depth_-0.5, 2.0);
+    current_subtree_depth_ = std::max(current_subtree_depth_-0.5, 4.0);
   }
   LOG(trace) << "New subtree depth: " << current_subtree_depth_;
 } /* EndStep() */
