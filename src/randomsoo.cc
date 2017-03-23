@@ -38,12 +38,10 @@ size_t RandomSOO::ChooseSplitDimension(const Node* node) const
   // Choose one of the valid dimensions at random (if there
   // are more than one)
   size_t dim = possible_dim[0];
-  std::cout << "SPLITTING" << std::endl;
   bool found = false;
   if (possible_dim.size() > 1) {
     for (size_t o : order_) {
       for (size_t d : possible_dim) {
-        std::cout << d << " == " << o << " ?" << std::endl;
         if (d == o) {
           dim = d;
           found = true;
